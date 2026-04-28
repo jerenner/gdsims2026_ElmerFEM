@@ -1,0 +1,82 @@
+Header
+  Mesh DB "../output/mesh" "."
+End
+
+Simulation
+  Coordinate System = Cartesian 2D
+  Simulation Type = Transient
+  Timestepping Method = BDF
+  BDF Order = 2
+  TimeStep Intervals = 1200
+  TimeStep Sizes = 1.0e-9
+  Output Intervals = 1
+  Steady State Max Iterations = 1
+  Output File = "../output/elmer/weighting_dynamic_eqs.result"
+End
+
+Constants
+  Permittivity Of Vacuum = 8.854187817e-12
+End
+
+Body 1
+  Target Bodies(1) = 1
+  Name = "ResistiveLayer"
+  Equation = 1
+  Material = 1
+  Initial Condition = 1
+End
+
+Body 2
+  Target Bodies(1) = 2
+  Name = "GasGap"
+  Equation = 1
+  Material = 2
+  Initial Condition = 1
+End
+
+Equation 1
+  Active Solvers(1) = 1
+End
+
+Solver 1
+  Equation = Quasi Electrostatics
+  Variable = Potential
+  Procedure = "QuasiElectrostaticSolver" "QuasiElectrostaticSolver"
+  ! Garfield stores the transient map as a delayed correction relative to the
+  ! prompt weighting potential, so the EQS transient must start from the
+  ! static weighting solution rather than from zero.
+  Restart File = File "../output/elmer/weighting_static.result"
+  Restart Position = Integer 0
+  Restart Time = Real 0.0
+  Linear System Solver = Direct
+  Linear System Direct Method = Umfpack
+End
+
+Material 1
+  Name = "ResistiveMaterial"
+  ! For this layered 1D stack, sigma = 1e-4 S/m gives tau ~ 398 ns.
+  Electric Conductivity = 1.0e-4
+  Relative Permittivity = 4.0
+End
+
+Material 2
+  Name = "Gas"
+  Electric Conductivity = 1.0e-12
+  Relative Permittivity = 1.0
+End
+
+Initial Condition 1
+  ! Fallback only. In the normal workflow the restart file above supplies the
+  ! actual initial condition.
+  Potential = 0.0
+End
+
+Boundary Condition 1
+  Target Boundaries(1) = 1
+  Potential = 1.0
+End
+
+Boundary Condition 2
+  Target Boundaries(1) = 2
+  Potential = 0.0
+End

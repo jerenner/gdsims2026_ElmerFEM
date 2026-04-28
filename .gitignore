@@ -1,0 +1,23 @@
+.DS_Store
+**/.DS_Store
+
+# Local editor/workspace state.
+**/docs/.obsidian/
+
+# Generated meshes, field maps, Garfield signal tables, and solver output.
+**/output/
+
+# Local CMake build trees.
+**/garfield/build/
+**/garfield/build-*/
+
+# Generated runtime figures. Documentation figures are kept.
+**/figures/
+!**/docs/figures/
+!**/docs/figures/**
+
+# LaTeX byproducts, if notes are exported locally.
+**/*.aux
+**/*.log
+**/*.out
+**/*.toc
