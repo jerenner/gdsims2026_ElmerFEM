@@ -31,7 +31,7 @@ the readout electrode. The missing charge appears as a delayed tail.
 - `garfield/sim_transient.cpp`: Garfield++ driver
 - `scripts/compare_analytic_signal.py`: analytic 1D comparison and plotting script
 
-## Theory You Need
+## Summary of Theory
 
 The drift field and prompt weighting potential are electrostatic:
 
@@ -41,8 +41,22 @@ $$
 \nabla \cdot \left(\varepsilon \nabla \phi_w^{(0)}\right) = 0.
 $$
 
-The dynamic weighting potential solves the source-free electroquasistatic
-conductive-dielectric equation:
+The dynamic weighting-potential formalism used here follows Riegler's
+quasistatic extension of the weighting-field theorem for detectors containing
+conductive materials. In the electroquasistatic limit, the total current density
+in the weighting-field problem is
+
+$$
+\mathbf{J}_w =
+\sigma \mathbf{E}_w
++ \frac{\partial}{\partial t}\left(\varepsilon \mathbf{E}_w\right),
+\qquad
+\mathbf{E}_w = -\nabla \phi_w.
+$$
+
+With no volume source in the weighting-field solve, current continuity gives
+$\nabla \cdot \mathbf{J}_w = 0$. This gives the conductive-dielectric equation
+we solve in Elmer:
 
 $$
 \nabla \cdot \left[
@@ -150,7 +164,10 @@ much larger. The analytic comparison script below makes a tail zoom.
 ## 4. Analytic 1D Result
 
 For the wide central region of this geometry, the 2D finite-element solution
-should agree with the 1D parallel-plate result.
+should agree with the 1D parallel-plate result. In this section you will reduce
+the dynamic weighting-field problem to one interface potential. This is the
+same conductive-layer parallel-plate setup treated in the Riegler proceedings
+paper, specialized to the geometry used in this activity.
 
 Use:
 
@@ -164,7 +181,40 @@ d_2 = 1.0~\mathrm{cm},
 \sigma = 10^{-4}~\mathrm{S/m}.
 $$
 
-The 1D relaxation time is
+Let $u(t)$ be the weighting potential at the gas/resistive interface. The
+bottom readout electrode is fixed at $\phi_w = 1$, and the top electrode is
+fixed at $\phi_w = 0$.
+
+Because this is a 1D parallel-plate problem, the fields are uniform in each
+layer. Write the gas and resistive-layer fields in terms of $u(t)$:
+
+$$
+E_g(t) = \frac{u(t)}{d_2},
+\qquad
+E_r(t) = \frac{1 - u(t)}{d_1}.
+$$
+
+Now use current continuity at the interface. The gas has essentially no
+conductivity, so its current is displacement current. The resistive layer has
+both conductive and displacement current:
+
+$$
+J_g = \varepsilon_0 \frac{dE_g}{dt},
+\qquad
+J_r = \sigma E_r + \varepsilon_r \varepsilon_0 \frac{dE_r}{dt}.
+$$
+
+Set $J_g = J_r$ and use the two field expressions above. After simplifying,
+you should get a first-order relaxation equation for $u(t)$:
+
+$$
+\frac{du}{dt}
+=
+\frac{\sigma d_2}{\varepsilon_0(d_1 + \varepsilon_r d_2)}
+\left(1 - u\right).
+$$
+
+This means the 1D relaxation time is
 
 $$
 \tau =
@@ -178,7 +228,34 @@ $$
 \tau = 398~\mathrm{ns}.
 $$
 
-The prompt weighting field in the gas is
+The initial value $u(0)$ is not zero. It is the prompt electrostatic weighting
+solution from the static activity:
+
+$$
+u(0) =
+\frac{\varepsilon_r d_2}{d_1 + \varepsilon_r d_2}.
+$$
+
+The long-time value is $u(\infty) = 1$. Solve the ODE with this initial
+condition:
+
+$$
+u(t) =
+1 -
+\left[
+  1 -
+  \frac{\varepsilon_r d_2}{d_1 + \varepsilon_r d_2}
+\right] e^{-t/\tau}.
+$$
+
+Divide by $d_2$ to get the weighting field in the gas:
+
+$$
+E_g(t) =
+E_w^{(0)} + \Delta E_w \left(1 - e^{-t/\tau}\right).
+$$
+
+The prompt part is
 
 $$
 E_w^{(0)}
@@ -186,7 +263,7 @@ E_w^{(0)}
 = 0.889~\mathrm{cm^{-1}}.
 $$
 
-The delayed field amplitude is
+The delayed amplitude is
 
 $$
 \Delta E_w
@@ -289,3 +366,17 @@ detector materials relax after the charge moves. In this simple geometry, the
 finite-element result can be checked almost exactly against the 1D analytic
 solution, which is why this is a useful test of the Elmer solver and the
 Garfield++ dynamic weighting-field import.
+
+## References
+
+- W. Riegler, "Extended theorems for signal induction in particle detectors,"
+  Nuclear Instruments and Methods in Physics Research A 535 (2004) 287-293.
+  The quasistatic conductive-material formalism and the parallel-plate
+  conductive-layer example used here are discussed in this paper.
+  DOI: [10.1016/j.nima.2004.07.129](https://doi.org/10.1016/j.nima.2004.07.129).
+- W. Riegler and P. Windischhofer, "Signals induced on electrodes by moving
+  charges, a general theorem for Maxwell's equations based on
+  Lorentz-reciprocity," Nuclear Instruments and Methods in Physics Research A
+  980 (2020) 164471. This paper gives the broader full-Maxwell reciprocity
+  context and places the quasistatic weighting-field approaches in perspective.
+  DOI: [10.1016/j.nima.2020.164471](https://doi.org/10.1016/j.nima.2020.164471).
