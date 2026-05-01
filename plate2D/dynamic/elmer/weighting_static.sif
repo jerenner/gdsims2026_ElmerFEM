@@ -43,7 +43,7 @@ End
 
 Material 1
   Name = "Glass"
-  Relative Permittivity = 4.0
+  Relative Permittivity = 2.0
 End
 
 Material 2

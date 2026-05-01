@@ -18,7 +18,10 @@ prompt signal integrates to about `0.844 e` for the default electron track.
 Here the layer also has a conductivity. At very early times the response looks
 like the dielectric weighting field. At long times, charge in the resistive
 layer relaxes, and the gas/resistive interface behaves more like it is tied to
-the readout electrode. The missing charge appears as a delayed tail.
+the readout electrode. The missing charge appears as a delayed tail. To make
+that delayed component visible in this short activity, the dynamic example uses
+`Relative Permittivity = 2.0` and `Electric Conductivity = 1.0e-3 S/m` in the
+resistive layer.
 
 ## Files
 
@@ -121,8 +124,8 @@ cd ..
 
 Check these entries in `weighting_dynamic_eqs.sif`:
 
-- `Electric Conductivity = 1.0e-4` in the resistive layer,
-- `Relative Permittivity = 4.0` in the resistive layer,
+- `Electric Conductivity = 1.0e-3` in the resistive layer,
+- `Relative Permittivity = 2.0` in the resistive layer,
 - `TimeStep Sizes = 1.0e-9`,
 - `TimeStep Intervals = 1200`.
 
@@ -154,12 +157,13 @@ sensor.SetTimeWindow(0., 1.0, 1200);
 The program writes `output/garfield/signal_transient.dat`, with columns for the
 total, prompt, and delayed signal.
 
-Example full-scale signal:
+Example signal, zoomed to the first `50 ns`:
 
 ![Transient signal](./figures/signal_transient.png)
 
-On this scale the delayed tail is hard to see because the prompt current is
-much larger. The analytic comparison script below makes a tail zoom.
+The full signal file still extends to `1200 ns` so that the delayed tail and
+signal integral can be checked. The analytic comparison script below makes a
+tail zoom.
 
 ## 4. Analytic 1D Result
 
@@ -176,9 +180,9 @@ d_1 = 0.5~\mathrm{cm},
 \qquad
 d_2 = 1.0~\mathrm{cm},
 \qquad
-\varepsilon_r = 4,
+\varepsilon_r = 2,
 \qquad
-\sigma = 10^{-4}~\mathrm{S/m}.
+\sigma = 10^{-3}~\mathrm{S/m}.
 $$
 
 Let $u(t)$ be the weighting potential at the gas/resistive interface. The
@@ -225,7 +229,7 @@ $$
 For the default values,
 
 $$
-\tau = 398~\mathrm{ns}.
+\tau = 22~\mathrm{ns}.
 $$
 
 The initial value $u(0)$ is not zero. It is the prompt electrostatic weighting
@@ -260,7 +264,7 @@ The prompt part is
 $$
 E_w^{(0)}
 = \frac{\varepsilon_r}{d_1 + \varepsilon_r d_2}
-= 0.889~\mathrm{cm^{-1}}.
+= 0.800~\mathrm{cm^{-1}}.
 $$
 
 The delayed amplitude is
@@ -268,8 +272,24 @@ The delayed amplitude is
 $$
 \Delta E_w
 = \frac{d_1}{d_2(d_1 + \varepsilon_r d_2)}
-= 0.111~\mathrm{cm^{-1}}.
+= 0.200~\mathrm{cm^{-1}}.
 $$
+
+This expression is useful when thinking about how to make the transient part
+more visible. In this 1D model, the conductivity mainly changes the time scale
+`tau`; it does not change the infinite-time delayed charge. The relative size
+of the delayed field is
+
+$$
+\frac{\Delta E_w}{E_w^{(0)}} =
+\frac{d_1}{\varepsilon_r d_2}.
+$$
+
+To make the delayed component larger, increase the resistive-layer thickness
+or use a smaller dielectric constant. To make the same delayed charge appear
+earlier, increase the conductivity. In real materials, conductivity and
+dielectric constant can be correlated, but in this simplified model they are
+independent material inputs.
 
 The electron starts at $y = 1.45~\mathrm{cm}$ and stops at the gas/resistive
 interface at $y = 0.5~\mathrm{cm}$, so
@@ -310,8 +330,10 @@ Run:
 python3 scripts/compare_analytic_signal.py
 ```
 
-The script reads the conductivity from `weighting_dynamic_eqs.sif`, writes
-`output/garfield/signal_transient_analytic.dat`, and makes two plots:
+The script reads the conductivity and relative permittivity from
+`weighting_dynamic_eqs.sif`, writes
+`output/garfield/signal_transient_analytic.dat`, regenerates the short signal
+plot, and makes two comparison plots:
 
 - `figures/signal_transient_analytic_overlay.png`
 - `figures/signal_transient_tail_zoom.png`
@@ -331,21 +353,21 @@ the FEM/Garfield result and the analytic result. It should also print signal
 integrals close to:
 
 ```text
-prompt:  -0.844 e
-delayed: -0.100 e  within the 0-1200 ns window
-total:   -0.945 e  within the 0-1200 ns window
+prompt:  -0.760 e
+delayed: -0.190 e  within the 0-1200 ns window
+total:   -0.950 e  within the 0-1200 ns window
 ```
 
 The infinite-time total is `-0.950 e`. It is not exactly `-1 e` because the
 electron starts at `y = 1.45 cm`, slightly below the top electrode at
-`y = 1.5 cm`. The remaining difference between `-0.945 e` and `-0.950 e` is in
-the tail beyond the plotted time window.
+`y = 1.5 cm`. With the default `22 ns` relaxation time, the `1200 ns` signal
+window captures essentially the whole tail.
 
 ## Questions to Answer
 
 - Why does the signal start immediately in the corrected dynamic calculation?
 - Why did starting the transient map from zero produce a delayed pulse with little prompt signal?
-- Why is the static prompt integral only about `0.844 e`?
+- Why is the prompt integral less than `1 e`? Why is it about `0.760 e` for the default dynamic parameters?
 - Why does the dynamic signal approach about `0.950 e` when integrated long enough?
 - Where does the electron stop, and why does the prompt signal stop there?
 
@@ -354,6 +376,8 @@ the tail beyond the plotted time window.
 - Change the resistive-layer conductivity by a factor of `10`. Remember that higher resistivity means smaller conductivity.
 - After changing conductivity, rerun `weighting_dynamic_eqs.sif`, `sim_transient`, and `compare_analytic_signal.py`.
 - Predict how $\tau$ changes before looking at the plot.
+- Change the resistive-layer dielectric constant from `2` to `4` while keeping the conductivity fixed. What changes in the prompt and delayed amplitudes?
+- To recover the more subtle original case, try `Relative Permittivity = 4.0` and `Electric Conductivity = 1.0e-4 S/m`.
 - Compare the prompt and delayed integrals. Does the total charge change, or is the charge mostly redistributed in time?
 - Try a shorter signal window, for example `200 ns`. How much delayed charge is missed?
 - Start the electron closer to the top electrode. How does the total integrated charge change?

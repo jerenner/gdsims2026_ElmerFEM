@@ -27,9 +27,9 @@ import ROOT
 class AnalyticParameters:
     resistive_thickness_cm: float = 0.5
     gas_gap_cm: float = 1.0
-    resistive_epsilon_r: float = 4.0
+    resistive_epsilon_r: float = 2.0
     gas_epsilon_r: float = 1.0
-    resistive_conductivity_s_m: float = 1.0e-4
+    resistive_conductivity_s_m: float = 1.0e-3
     gas_conductivity_s_m: float = 1.0e-12
     electron_start_y_cm: float = 1.45
     gas_resistive_interface_y_cm: float = 0.5
@@ -61,23 +61,23 @@ def read_signal(path: Path) -> list[tuple[float, float, float, float]]:
     return rows
 
 
-def read_resistive_conductivity(root: Path) -> float:
+def read_material_value(root: Path, material_id: int, key: str) -> float:
     sif = root / "elmer" / "weighting_dynamic_eqs.sif"
-    in_material_1 = False
-    pattern = re.compile(r"Electric Conductivity\s*=\s*([0-9.eE+-]+)")
+    in_material = False
+    pattern = re.compile(rf"{re.escape(key)}\s*=\s*([0-9.eE+-]+)")
     with sif.open() as handle:
         for line in handle:
             stripped = line.strip()
-            if stripped == "Material 1":
-                in_material_1 = True
+            if stripped == f"Material {material_id}":
+                in_material = True
                 continue
-            if in_material_1 and stripped == "End":
+            if in_material and stripped == "End":
                 break
-            if in_material_1:
+            if in_material:
                 match = pattern.search(stripped)
                 if match:
                     return float(match.group(1))
-    raise RuntimeError(f"Could not read Material 1 conductivity from {sif}.")
+    raise RuntimeError(f"Could not read Material {material_id} {key} from {sif}.")
 
 
 def analytic_components(
@@ -223,8 +223,81 @@ def make_plot(
     text = ROOT.TLatex()
     text.SetNDC(True)
     text.SetTextSize(0.032)
-    text.DrawLatex(0.53, 0.62, f"#tau = {relaxation_time_ns(pars):.2f} ns")
     text.DrawLatex(0.53, 0.57, "electron reaches layer at T = 19.0 ns")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    canvas.SaveAs(str(path))
+
+
+def make_transient_signal_plot(
+    path: Path,
+    garfield_rows: list[tuple[float, float, float, float]],
+) -> None:
+    ROOT.gROOT.SetBatch(True)
+    ROOT.gStyle.SetOptStat(0)
+
+    xmax = 50.0
+    window_rows = [row for row in garfield_rows if row[0] <= xmax]
+    if not window_rows:
+        raise RuntimeError("No signal samples found in the 0-50 ns plotting window.")
+
+    values = [value for _, total, prompt, delayed in window_rows
+              for value in (total, prompt, delayed)]
+    ymin = 1.12 * min(values)
+    ymax = max(0.7e-6, 1.12 * max(values))
+
+    canvas = ROOT.TCanvas("cTransientSignal", "Transient signal", 950, 650)
+    frame = ROOT.TH1D("transientFrame", "", 100, 0.0, xmax)
+    frame.SetDirectory(0)
+    frame.SetMinimum(ymin)
+    frame.SetMaximum(ymax)
+    frame.GetXaxis().SetTitle("time [ns]")
+    frame.GetYaxis().SetTitle("signal [fC / ns]")
+    frame.GetXaxis().SetTitleSize(0.045)
+    frame.GetYaxis().SetTitleSize(0.045)
+    frame.Draw()
+
+    total_graph = graph(
+        [(t, total) for t, total, _, _ in garfield_rows],
+        "garfield_total_short",
+        ROOT.kBlue + 2,
+        4,
+    )
+    prompt_graph = graph(
+        [(t, prompt) for t, _, prompt, _ in garfield_rows],
+        "garfield_prompt_short",
+        ROOT.kGray + 2,
+        3,
+        2,
+    )
+    delayed_graph = graph(
+        [(t, delayed) for t, _, _, delayed in garfield_rows],
+        "garfield_delayed_short",
+        ROOT.kOrange + 7,
+        3,
+    )
+    total_graph.Draw("L SAME")
+    prompt_graph.Draw("L SAME")
+    delayed_graph.Draw("L SAME")
+
+    collection = ROOT.TLine(19.0, ymin, 19.0, ymax)
+    collection.SetLineColor(ROOT.kGray + 1)
+    collection.SetLineStyle(3)
+    collection.SetLineWidth(2)
+    collection.Draw()
+
+    legend = ROOT.TLegend(0.50, 0.65, 0.88, 0.84)
+    legend.SetBorderSize(0)
+    legend.SetFillStyle(0)
+    legend.AddEntry(total_graph, "total", "l")
+    legend.AddEntry(prompt_graph, "prompt", "l")
+    legend.AddEntry(delayed_graph, "delayed", "l")
+    legend.Draw()
+
+    text = ROOT.TLatex()
+    text.SetNDC(True)
+    text.SetTextSize(0.032)
+    text.DrawLatex(0.52, 0.57, "electron reaches layer at T = 19.0 ns")
 
     path.parent.mkdir(parents=True, exist_ok=True)
     canvas.SaveAs(str(path))
@@ -240,7 +313,9 @@ def make_tail_zoom_plot(
     ROOT.gStyle.SetOptStat(0)
 
     dt = garfield_rows[1][0] - garfield_rows[0][0]
-    xmax = garfield_rows[-1][0] + 0.5 * dt
+    full_xmax = garfield_rows[-1][0] + 0.5 * dt
+    tail_xmax = 19.0 + 8.0 * relaxation_time_ns(pars)
+    xmax = min(full_xmax, max(200.0, tail_xmax))
     delayed_values = [delayed for _, _, _, delayed in garfield_rows]
     ymin = 1.12 * min(delayed_values)
     ymax = max(0.3e-8, 0.08 * abs(ymin))
@@ -288,7 +363,6 @@ def make_tail_zoom_plot(
     text.SetNDC(True)
     text.SetTextSize(0.032)
     text.DrawLatex(0.17, 0.84, f"#tau = {relaxation_time_ns(pars):.2f} ns")
-    text.DrawLatex(0.17, 0.79, "10x higher resistivity")
 
     path.parent.mkdir(parents=True, exist_ok=True)
     canvas.SaveAs(str(path))
@@ -333,12 +407,19 @@ def main() -> None:
     docs_plot_file = root / "docs" / "figures" / "signal_transient_analytic_overlay.png"
     zoom_file = root / "figures" / "signal_transient_tail_zoom.png"
     docs_zoom_file = root / "docs" / "figures" / "signal_transient_tail_zoom.png"
+    signal_plot_file = root / "figures" / "signal_transient.png"
+    docs_signal_plot_file = root / "docs" / "figures" / "signal_transient.png"
 
     pars = AnalyticParameters(
-        resistive_conductivity_s_m=read_resistive_conductivity(root)
+        resistive_conductivity_s_m=read_material_value(
+            root, 1, "Electric Conductivity"
+        ),
+        resistive_epsilon_r=read_material_value(root, 1, "Relative Permittivity"),
     )
     garfield_rows = read_signal(signal_file)
     analytic_rows = write_analytic_table(analytic_file, garfield_rows, pars)
+    make_transient_signal_plot(signal_plot_file, garfield_rows)
+    make_transient_signal_plot(docs_signal_plot_file, garfield_rows)
     make_plot(plot_file, garfield_rows, analytic_rows, pars)
     make_plot(docs_plot_file, garfield_rows, analytic_rows, pars)
     make_tail_zoom_plot(zoom_file, garfield_rows, analytic_rows, pars)
@@ -346,6 +427,8 @@ def main() -> None:
     print_residuals(garfield_rows, analytic_rows, pars)
     print_integrals(garfield_rows)
     print(f"Wrote {analytic_file}")
+    print(f"Wrote {signal_plot_file}")
+    print(f"Wrote {docs_signal_plot_file}")
     print(f"Wrote {plot_file}")
     print(f"Wrote {docs_plot_file}")
     print(f"Wrote {zoom_file}")

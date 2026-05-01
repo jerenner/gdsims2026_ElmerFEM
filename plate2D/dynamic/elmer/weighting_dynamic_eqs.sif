@@ -54,9 +54,9 @@ End
 
 Material 1
   Name = "ResistiveMaterial"
-  ! For this layered 1D stack, sigma = 1e-4 S/m gives tau ~ 398 ns.
-  Electric Conductivity = 1.0e-4
-  Relative Permittivity = 4.0
+  ! For this layered 1D stack, sigma = 1e-3 S/m and eps_r = 2 give tau ~ 22 ns.
+  Electric Conductivity = 1.0e-3
+  Relative Permittivity = 2.0
 End
 
 Material 2
