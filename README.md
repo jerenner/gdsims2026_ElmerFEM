@@ -14,22 +14,19 @@ These activities assume that:
 - the repository has been cloned under `/home/student`,
 - `ElmerGrid` and `ElmerSolver` are installed and available in `PATH`,
 - Gmsh is installed with GUI support and `gmsh` is available in `PATH`,
-- Garfield++ is available at `/home/student/Software/garfield/garfield-20260325`.
+- Garfield++ is available at `/home/student/Software/garfield/garfield-20260325`,
+- the student's shell startup file sources Garfield++ setup, for example
+  `/home/student/Software/garfield/garfield-20260325/build/setupGarfield.sh`.
 
-If Garfield++ is somewhere else, set one of these before sourcing the setup
-script:
+The repository setup script is only a sanity check. It does not try to build or
+discover the full software stack. If Garfield++ is somewhere else, set
+`GARFIELD_ROOT` before sourcing the setup script:
 
 ```bash
 export GARFIELD_ROOT=/path/to/garfield-20260325
 ```
 
-or, if Garfield++ was installed into a separate prefix:
-
-```bash
-export GARFIELD_INSTALL=/path/to/garfield-install-prefix
-```
-
-or, if you know the exact CMake package directory:
+If you know the exact CMake package directory, you can set this instead:
 
 ```bash
 export Garfield_DIR=/path/to/directory/containing/GarfieldConfig.cmake
@@ -47,8 +44,9 @@ You can also source the setup script by absolute path, for example:
 source /home/student/gdsims2026_ElmerFEM/setup_env.sh
 ```
 
-The setup script checks `ElmerGrid`, `ElmerSolver`, and `gmsh`, then configures
-Garfield++ for the local Garfield build/install. After that, follow the web
+The setup script checks `ElmerGrid`, `ElmerSolver`, `gmsh`, `cmake`, and the
+Garfield++ CMake environment. If Garfield++ was not already configured, it tries
+to source the default Garfield++ setup script. After that, follow the web
 documentation in the activity's `docs/index.md`.
 
 ## Activity Links
