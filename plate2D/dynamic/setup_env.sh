@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-SEARCH_DIR="${PWD}"
+SEARCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ACTIVITY_REPO=""
 for _ in 1 2 3 4 5 6; do
   if [ -f "${SEARCH_DIR}/setup_env.sh" ] && [ -d "${SEARCH_DIR}/plate2D/static" ] && \
@@ -15,6 +15,21 @@ for _ in 1 2 3 4 5 6; do
   fi
   SEARCH_DIR="$(cd "${SEARCH_DIR}/.." && pwd)"
 done
+
+if [ -z "${ACTIVITY_REPO}" ]; then
+  SEARCH_DIR="${PWD}"
+  for _ in 1 2 3 4 5 6; do
+    if [ -f "${SEARCH_DIR}/setup_env.sh" ] && [ -d "${SEARCH_DIR}/plate2D/static" ] && \
+       [ -d "${SEARCH_DIR}/plate2D/dynamic" ]; then
+      ACTIVITY_REPO="${SEARCH_DIR}"
+      break
+    fi
+    if [ "${SEARCH_DIR}" = "/" ]; then
+      break
+    fi
+    SEARCH_DIR="$(cd "${SEARCH_DIR}/.." && pwd)"
+  done
+fi
 
 if [ -z "${ACTIVITY_REPO}" ]; then
   echo "Could not find the gdsims2026_ElmerFEM root."

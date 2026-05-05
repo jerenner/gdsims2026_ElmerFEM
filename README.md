@@ -11,10 +11,29 @@ Activities for the 2026 detector simulation school using Gmsh, Elmer, and Garfie
 
 These activities assume that:
 
-- `garfieldpp`, `elmerfem`, and `gmsh` are already available next to this repository,
-- Garfield++ has already been built and installed at `../garfieldpp/install`,
-- Elmer has already been built at `../elmerfem/build`,
-- Gmsh has already been built at `../gmsh/build`.
+- the repository has been cloned under `/home/student`,
+- `ElmerGrid` and `ElmerSolver` are installed and available in `PATH`,
+- Gmsh is installed with GUI support and `gmsh` is available in `PATH`,
+- Garfield++ is available at `/home/student/Software/garfield/garfield-20260325`.
+
+If Garfield++ is somewhere else, set one of these before sourcing the setup
+script:
+
+```bash
+export GARFIELD_ROOT=/path/to/garfield-20260325
+```
+
+or, if Garfield++ was installed into a separate prefix:
+
+```bash
+export GARFIELD_INSTALL=/path/to/garfield-install-prefix
+```
+
+or, if you know the exact CMake package directory:
+
+```bash
+export Garfield_DIR=/path/to/directory/containing/GarfieldConfig.cmake
+```
 
 From any activity folder, run:
 
@@ -22,7 +41,15 @@ From any activity folder, run:
 source setup_env.sh
 ```
 
-and then follow the web documentation in that activity's `docs/index.md`.
+You can also source the setup script by absolute path, for example:
+
+```bash
+source /home/student/gdsims2026_ElmerFEM/setup_env.sh
+```
+
+The setup script checks `ElmerGrid`, `ElmerSolver`, and `gmsh`, then configures
+Garfield++ for the local Garfield build/install. After that, follow the web
+documentation in the activity's `docs/index.md`.
 
 ## Activity Links
 
