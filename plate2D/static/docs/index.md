@@ -228,17 +228,17 @@ The program writes `output/garfield/signal_static.dat`.
 
 ## 6. Check the Signal
 
-Make a simple SVG plot:
+Make a simple Matplotlib plot from the signal samples:
 
 ```bash
-python3 scripts/plot_signal_svg.py \
+python3 scripts/plot_signal.py \
   output/garfield/signal_static.dat \
-  docs/figures/signal_static.svg
+  docs/figures/signal_static.png
 ```
 
 Example output:
 
-![Prompt signal](./figures/signal_static.svg)
+![Prompt signal](./figures/signal_static.png)
 
 Now compare the integral with the 1D estimate:
 

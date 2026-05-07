@@ -32,7 +32,7 @@ resistive layer.
 - `elmer/weighting_dynamic.sif`: older heat-equation approximation for comparison only
 - `elmer/materials.dat`: material map used by Garfield++
 - `garfield/sim_transient.cpp`: Garfield++ driver
-- `scripts/compare_analytic_signal.py`: analytic 1D comparison and plotting script
+- `scripts/compare_analytic_signal.py`: analytic 1D comparison and Matplotlib plotting script
 
 ## Summary of Theory
 
@@ -329,6 +329,10 @@ Run:
 ```bash
 python3 scripts/compare_analytic_signal.py
 ```
+
+This script uses Matplotlib, not PyROOT. On the school VM it should already be
+available; if it is missing, install the Debian/Ubuntu package
+`python3-matplotlib`.
 
 The script reads the conductivity and relative permittivity from
 `weighting_dynamic_eqs.sif`, writes

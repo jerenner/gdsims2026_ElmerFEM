@@ -10,7 +10,7 @@ GARFIELD_DEFAULT_SETUP="${GARFIELD_DEFAULT_ROOT}/build/setupGarfield.sh"
 echo "Checking gdsims2026_ElmerFEM environment..."
 
 missing_tools=0
-for tool in ElmerGrid ElmerSolver gmsh cmake; do
+for tool in ElmerGrid ElmerSolver gmsh cmake python3; do
   if command -v "${tool}" >/dev/null 2>&1; then
     echo "  [OK] ${tool}: $(command -v "${tool}")"
   else
@@ -18,6 +18,16 @@ for tool in ElmerGrid ElmerSolver gmsh cmake; do
     missing_tools=1
   fi
 done
+
+if command -v python3 >/dev/null 2>&1; then
+  if python3 -c "import matplotlib" >/dev/null 2>&1; then
+    echo "  [OK] python3 matplotlib"
+  else
+    echo "  [ERROR] python3 matplotlib was not found."
+    echo "          Install it with: sudo apt install python3-matplotlib"
+    missing_tools=1
+  fi
+fi
 
 if [ -z "${GARFIELD_INSTALL:-}" ] && [ -f "${GARFIELD_DEFAULT_SETUP}" ]; then
   # The student VM should normally source this from ~/.bashrc already. This

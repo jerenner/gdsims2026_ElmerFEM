@@ -14,6 +14,7 @@ These activities assume that:
 - the repository has been cloned under `/home/student`,
 - `ElmerGrid` and `ElmerSolver` are installed and available in `PATH`,
 - Gmsh is installed with GUI support and `gmsh` is available in `PATH`,
+- Python 3 and Matplotlib are installed,
 - Garfield++ is available at `/home/student/Software/garfield/garfield-20260325`,
 - the student's shell startup file sources Garfield++ setup, for example
   `/home/student/Software/garfield/garfield-20260325/build/setupGarfield.sh`.
@@ -44,10 +45,10 @@ You can also source the setup script by absolute path, for example:
 source /home/student/gdsims2026_ElmerFEM/setup_env.sh
 ```
 
-The setup script checks `ElmerGrid`, `ElmerSolver`, `gmsh`, `cmake`, and the
-Garfield++ CMake environment. If Garfield++ was not already configured, it tries
-to source the default Garfield++ setup script. After that, follow the web
-documentation in the activity's `docs/index.md`.
+The setup script checks `ElmerGrid`, `ElmerSolver`, `gmsh`, `cmake`, `python3`,
+Matplotlib, and the Garfield++ CMake environment. If Garfield++ was not already
+configured, it tries to source the default Garfield++ setup script. After that,
+follow the web documentation in the activity's `docs/index.md`.
 
 ## Activity Links
 
