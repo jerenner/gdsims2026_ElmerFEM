@@ -1,12 +1,12 @@
 # 2D Parallel Plate: Static Weighting Potential
 
-In this activity you will build a simple 2D detector geometry, solve two
-electrostatic field maps in Elmer, and use Garfield++ to calculate the prompt
-signal from one drifting electron.
+In this activity you will build a simple 2D detector geometry, solve for the
+electrostatic and weighting field maps in Elmer, and use Garfield++ to
+calculate the induced signal from one drifting electron.
 
-The goal is not only to run the example. You should leave with a working mental
-model for how Gmsh geometry, Elmer physical groups, and Garfield++ field-map
-loading fit together.
+The goal is not only to run the example. You should also become familiar with
+how Gmsh geometry, Elmer physical groups, and Garfield++ field-map loading fit
+together.
 
 ![Parallel-plate geometry](./figures/geometry_diagram.png)
 
@@ -31,9 +31,7 @@ $$
 
 ## Files
 
-- `geometry/ppc_geometry_template.geo`: starter geometry with blanks
-- `geometry/ppc_geometry.geo`: complete working geometry
-- `geometry/ppc_geometry_solution.geo`: backup solution
+- `geometry/ppc_geometry.geo`: starter geometry with blanks
 - `elmer/electric_field.sif`: electrostatic drift-field solve
 - `elmer/weighting_field.sif`: static weighting-potential solve
 - `garfield/sim_static.cpp`: Garfield++ driver
@@ -41,9 +39,10 @@ $$
 
 ## 1. Complete the Gmsh Geometry
 
-Start from `geometry/ppc_geometry_template.geo`. If you get stuck, compare with
-`geometry/ppc_geometry_solution.geo`; if time is short, use
-`geometry/ppc_geometry.geo` directly.
+Start from `geometry/ppc_geometry.geo`. It contains the parameters and TODO
+markers; your job is to fill in the missing points, lines, surfaces, and
+physical groups. The complete set of geometry statements is shown below, so you
+do not need a separate solution file.
 
 Gmsh `.geo` files are just a sequence of geometry definitions. The first block
 sets dimensions and the mesh size:
@@ -92,6 +91,12 @@ Plane Surface(2) = {2};
 
 Recombine Surface {1, 2};
 ```
+
+`Recombine Surface` tells Gmsh to recombine triangular elements into
+quadrilateral elements on the listed surfaces. It does not create a new physical
+boundary and it does not change the detector geometry. Here it gives a clean,
+structured-looking mesh for two rectangular layers, which is convenient for
+Elmer and for checking the field map.
 
 Physical groups are the names Elmer will see. Without them, you would have a
 mesh but no easy way to assign materials or boundary voltages:

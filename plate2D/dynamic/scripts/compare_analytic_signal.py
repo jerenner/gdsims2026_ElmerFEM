@@ -209,7 +209,7 @@ def make_plot(
     ax.set_ylim(-8.2e-6, 0.7e-6)
     ax.set_xlabel("time [ns]")
     ax.set_ylabel("signal [fC / ns]")
-    ax.legend(frameon=False, loc="upper right")
+    ax.legend(frameon=False, loc="lower right")
     save_figure(fig, path)
 
 
@@ -262,7 +262,7 @@ def make_transient_signal_plot(path: Path, garfield_rows: SignalRows) -> None:
     ax.set_ylim(ymin, ymax)
     ax.set_xlabel("time [ns]")
     ax.set_ylabel("signal [fC / ns]")
-    ax.legend(frameon=False, loc="upper right")
+    ax.legend(frameon=False, loc="lower right")
     save_figure(fig, path)
 
 

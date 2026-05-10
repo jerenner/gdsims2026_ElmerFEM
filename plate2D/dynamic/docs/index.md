@@ -25,7 +25,7 @@ resistive layer.
 
 ## Files
 
-- `geometry/ppc_geometry.geo`: same geometry as the static activity
+- `geometry/ppc_geometry.geo`: completed version of the same geometry used in the static activity
 - `elmer/drift_field.sif`: electrostatic drift-field solve
 - `elmer/weighting_static.sif`: prompt weighting-potential solve
 - `elmer/weighting_dynamic_eqs.sif`: transient EQS weighting-potential solve
@@ -97,8 +97,6 @@ The solver line is:
 Procedure = "QuasiElectrostaticSolver" "QuasiElectrostaticSolver"
 ```
 
-For this activity, assume this solver is already installed with Elmer.
-
 ## 1. Rebuild the Mesh
 
 ```bash
@@ -109,8 +107,10 @@ gmsh geometry/ppc_geometry.geo -2 -order 2 -format msh2 -o output/ppc_geometry.m
 ElmerGrid 14 2 output/ppc_geometry.msh -autoclean -out output/mesh
 ```
 
-This is the same geometry as the static exercise: a `0.5 cm` resistive layer
-and a `1.0 cm` gas gap.
+This is the same geometry you completed in the static exercise: a `0.5 cm`
+resistive layer and a `1.0 cm` gas gap. In this dynamic activity folder, the
+geometry file is already filled in so you can focus on the transient weighting
+field.
 
 ## 2. Run the Elmer Solves
 
@@ -140,9 +140,6 @@ cmake --build garfield/build
 ./garfield/build/sim_transient
 ```
 
-If CMake still points at an old ROOT installation, remove `garfield/build` once
-and rerun the configure step.
-
 The key Garfield++ calls are:
 
 ```cpp
@@ -155,9 +152,8 @@ sensor.SetTimeWindow(0., 1.0, 1200);
 ```
 
 The program writes `output/garfield/signal_transient.dat`, with columns for the
-total, prompt, and delayed signal.
-
-Example signal, zoomed to the first `50 ns`:
+total, prompt, and delayed signal. An example signal, zoomed to the first
+`50 ns`:
 
 ![Transient signal](./figures/signal_transient.png)
 
@@ -171,7 +167,7 @@ For the wide central region of this geometry, the 2D finite-element solution
 should agree with the 1D parallel-plate result. In this section you will reduce
 the dynamic weighting-field problem to one interface potential. This is the
 same conductive-layer parallel-plate setup treated in the Riegler proceedings
-paper, specialized to the geometry used in this activity.
+paper referenced below, specialized to the geometry used in this activity.
 
 Use:
 
@@ -370,30 +366,22 @@ window captures essentially the whole tail.
 ## Questions to Answer
 
 - Why does the signal start immediately in the corrected dynamic calculation?
-- Why did starting the transient map from zero produce a delayed pulse with little prompt signal?
 - Why is the prompt integral less than `1 e`? Why is it about `0.760 e` for the default dynamic parameters?
 - Why does the dynamic signal approach about `0.950 e` when integrated long enough?
 - Where does the electron stop, and why does the prompt signal stop there?
 
 ## Things to Try
 
-- Change the resistive-layer conductivity by a factor of `10`. Remember that higher resistivity means smaller conductivity.
-- After changing conductivity, rerun `weighting_dynamic_eqs.sif`, `sim_transient`, and `compare_analytic_signal.py`.
-- Predict how $\tau$ changes before looking at the plot.
-- Change the resistive-layer dielectric constant from `2` to `4` while keeping the conductivity fixed. What changes in the prompt and delayed amplitudes?
-- To recover the more subtle original case, try `Relative Permittivity = 4.0` and `Electric Conductivity = 1.0e-4 S/m`.
-- Compare the prompt and delayed integrals. Does the total charge change, or is the charge mostly redistributed in time?
-- Try a shorter signal window, for example `200 ns`. How much delayed charge is missed?
+- Change the resistive-layer conductivity by a factor of `10`. Remember that higher resistivity means smaller conductivity. Rerun `weighting_dynamic_eqs.sif`, `sim_transient`, and `compare_analytic_signal.py`. Predict how $\tau$ changes before looking at the plot.
+- Change the resistive-layer dielectric constant from `2` to `4` while keeping the conductivity fixed. What changes in the prompt and delayed amplitudes? Does the total charge change, or is the charge mostly redistributed in time?
 - Start the electron closer to the top electrode. How does the total integrated charge change?
 
 ## Main Takeaway
 
 The static weighting field gives the immediate prompt response. The dynamic
-weighting field does not create a new drifting charge; it describes how the
-detector materials relax after the charge moves. In this simple geometry, the
-finite-element result can be checked almost exactly against the 1D analytic
-solution, which is why this is a useful test of the Elmer solver and the
-Garfield++ dynamic weighting-field import.
+weighting field describes how the detector materials relax after the charge
+moves. In this simple geometry, the finite-element result can be checked almost
+exactly against the 1D analytic solution.
 
 ## References
 
