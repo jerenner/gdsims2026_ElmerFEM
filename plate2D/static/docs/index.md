@@ -151,57 +151,106 @@ Open the `.sif` files and find the two important differences:
 
 ## 4. Analytic Weighting Field
 
-Before running Garfield++, compute the 1D answer. The static weighting
-potential satisfies
+Before running Garfield++, compute the 1D answer. This gives you a simple
+check on the Elmer/Garfield++ result.
+
+The weighting potential for the readout electrode is found by setting the
+readout electrode to `1`, all other electrodes to `0`, and solving
 
 $$
 \nabla \cdot \left(\varepsilon \nabla \phi_w\right) = 0.
 $$
 
-For this layered parallel-plate geometry, the displacement field is constant
-through the stack. In the gas, the prompt weighting field is
+The weighting field is
 
 $$
-E_w^{(0)} =
+\mathbf{E}_w = -\nabla \phi_w.
+$$
+
+Shockley-Ramo tells us that the induced current from a charge $q$ moving with
+velocity $\mathbf{v}$ is proportional to the weighting field:
+
+$$
+i(t) = -q\,\mathbf{v}(t)\cdot\mathbf{E}_w(\mathbf{r}(t)).
+$$
+
+Equivalently, the integrated induced charge depends only on the change in
+weighting potential along the track:
+
+$$
+Q = q\left[\phi_w(\mathbf{r}_\mathrm{final})
+          - \phi_w(\mathbf{r}_\mathrm{initial})\right].
+$$
+
+For an electron, $q=-e$, so in the sign convention used here
+
+$$
+\frac{Q}{e}
+= -\left[\phi_w(\mathbf{r}_\mathrm{final})
+          - \phi_w(\mathbf{r}_\mathrm{initial})\right].
+$$
+
+Now specialize this to the parallel-plate geometry. In 1D, the weighting field
+is constant in each layer. Let $E_r$ be the field magnitude in the resistive
+layer and $E_g$ be the field magnitude in the gas. The total weighting-potential
+drop from the readout electrode to the top electrode is `1`, so
+
+$$
+E_r d_1 + E_g d_2 = 1.
+$$
+
+At the gas/resistive interface, the normal displacement field is continuous:
+
+$$
+\varepsilon_r E_r = E_g.
+$$
+
+Use these two equations to show that the prompt weighting field in the gas is
+
+$$
+E_w^{(0)} = E_g =
 \frac{\varepsilon_r}{d_1 + \varepsilon_r d_2}.
 $$
 
-With the default geometry,
-
-$$
-E_w^{(0)} =
-\frac{4}{0.5 + 4 \cdot 1.0}
-= 0.889~\mathrm{cm^{-1}}.
-$$
-
-The weighting potential at the gas/resistive interface is
+Then show that the weighting potential at the gas/resistive interface is
 
 $$
 \phi_w(d_1) =
-\frac{\varepsilon_r d_2}{d_1 + \varepsilon_r d_2}
-= 0.889.
+\frac{\varepsilon_r d_2}{d_1 + \varepsilon_r d_2}.
 $$
 
-The example electron starts at $y = 1.45~\mathrm{cm}$ and stops at the
-gas/resistive interface at $y = 0.5~\mathrm{cm}$. With the fixed drift speed
-$v = 0.05~\mathrm{cm/ns}$, the collection time is
+Checkpoint: with the default geometry, you should find
+$E_w^{(0)} \approx 0.889~\mathrm{cm^{-1}}$ and
+$\phi_w(d_1) \approx 0.889$.
+
+The example electron starts at $y_0 = 1.45~\mathrm{cm}$ and stops at the
+gas/resistive interface, $y_1 = 0.5~\mathrm{cm}$. With the fixed drift speed
+$v = 0.05~\mathrm{cm/ns}$, compute the collection time:
 
 $$
-T = \frac{1.45 - 0.5}{0.05} = 19~\mathrm{ns}.
+T = \frac{y_0 - y_1}{v}.
 $$
 
-The expected integrated prompt signal is
+Finally, use the integrated Shockley-Ramo expression. Since the field is
+constant in the gas,
 
 $$
-\frac{Q_\mathrm{prompt}}{e}
-= -\Delta \phi_w
-= -E_w^{(0)}(1.45 - 0.5)
-= -0.844.
+\Delta \phi_w =
+\phi_w(y_1) - \phi_w(y_0)
+= E_w^{(0)}(y_0 - y_1).
 $$
 
-The magnitude is less than one electron because this static calculation treats
-the resistive layer as a pure dielectric. In the dynamic activity, the finite
-conductivity of the layer lets the field relax at long times.
+For an electron,
+
+$$
+\frac{Q_\mathrm{prompt}}{e} = -\Delta \phi_w.
+$$
+
+Evaluate this number. You should get a prompt signal integral close to
+`-0.844 e`. The magnitude is less than one electron because this static
+calculation treats the resistive layer as a pure dielectric. In the dynamic
+activity, the finite conductivity of the layer lets the field relax at long
+times.
 
 ## 5. Run Garfield++
 
