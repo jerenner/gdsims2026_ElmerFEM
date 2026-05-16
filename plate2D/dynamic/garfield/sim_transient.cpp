@@ -61,15 +61,17 @@ int main() {
                                "weighting_static.result";
   const auto eqsWeighting = activityRoot / "output" / "elmer" /
                             "weighting_dynamic_eqs.result";
-  const auto legacyWeighting = activityRoot / "output" / "elmer" /
-                               "weighting_dynamic.result";
-  const auto transientWeighting =
-      std::filesystem::exists(eqsWeighting) ? eqsWeighting : legacyWeighting;
   const auto imageFile = activityRoot / "figures" / "signal_transient.png";
   const auto dataFile = activityRoot / "output" / "garfield" /
                         "signal_transient.dat";
 
   std::filesystem::create_directories(dataFile.parent_path());
+  if (!std::filesystem::exists(eqsWeighting)) {
+    std::cerr << "Missing EQS transient weighting map: " << eqsWeighting
+              << "\nRun `ElmerSolver weighting_dynamic_eqs.sif` before "
+                 "running this program.\n";
+    return 1;
+  }
 
   MediumGas gas;
   gas.SetComposition("ar", 70., "co2", 30.);
@@ -86,8 +88,8 @@ int main() {
                  "cm");
   elm.SetMedium(1, &gas);
   elm.SetWeightingPotential(promptWeighting.string(), "Readout");
-  elm.SetDynamicWeightingPotential(transientWeighting.string(), "Readout");
-  std::cout << "Using transient weighting map " << transientWeighting << ".\n";
+  elm.SetDynamicWeightingPotential(eqsWeighting.string(), "Readout");
+  std::cout << "Using transient weighting map " << eqsWeighting << ".\n";
 
   Sensor sensor;
   sensor.AddComponent(&elm);

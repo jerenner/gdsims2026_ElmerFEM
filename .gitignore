@@ -3,6 +3,13 @@
 
 # Local editor/workspace state.
 **/docs/.obsidian/
+*.swp
+*.swo
+
+# Local-only validation helpers for this workstation.
+setup_env_local.sh
+scripts/validate_all.py
+scripts/__pycache__/
 
 # Generated meshes, field maps, Garfield signal tables, and solver output.
 **/output/

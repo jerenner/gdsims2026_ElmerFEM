@@ -278,6 +278,10 @@ sensor.AddComponent(&elm);
 sensor.AddElectrode(&elm, "Readout");
 ```
 
+Here `SetMedium(1, &gas)` uses Garfield++'s zero-based material index. It
+corresponds to Elmer material/body 2, the gas gap, not directly to the Gmsh
+physical-group tag.
+
 The program writes `output/garfield/signal_static.dat`.
 
 ## 6. Check the Signal
@@ -305,7 +309,6 @@ convention; the magnitude is the useful check.
 
 ## Questions to Answer
 
-- Which Gmsh physical group becomes the gas material in Elmer?
 - Why does the gas/resistive interface use `Line(3)` in one surface and `-3` in the other?
 - Why is the static prompt integral about `0.844 e` rather than `1 e`?
 - What would change if the electron started closer to the top electrode?

@@ -1,5 +1,4 @@
 // Gmsh Script (.geo) for Parallel Plate Capacitor with Resistive Layer
-// School Year 2026 - Detector Simulation School
 
 // --- Geometry Parameters ---
 lc = 0.1;           // Characteristic length (mesh size)

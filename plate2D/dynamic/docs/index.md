@@ -365,7 +365,7 @@ window captures essentially the whole tail.
 
 ## Questions to Answer
 
-- Why does the signal start immediately in the corrected dynamic calculation?
+- Why does the dynamic signal still start immediately?
 - Why is the prompt integral less than `1 e`? Why is it about `0.760 e` for the default dynamic parameters?
 - Why does the dynamic signal approach about `0.950 e` when integrated long enough?
 - Where does the electron stop, and why does the prompt signal stop there?
